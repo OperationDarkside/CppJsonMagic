@@ -1,0 +1,147 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "C++: Build with GCC Trunk",
+      "type": "shell",
+      "command": "${HOME}/gcc-trunk/bin/g++",
+      "args": [
+        "-std=c++26",
+        "-freflection",
+        "-g",
+        "-Wall",
+        "-Wextra",
+        "-O0",
+        "${file}",
+        "-o",
+        "${fileDirname}/${fileBasenameNoExtension}"
+      ],
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "problemMatcher": [
+        "$gcc"
+      ],
+      "detail": "Build current C++ file with reflection support",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared"
+      }
+    },
+    {
+      "label": "C++: Build Project (main.cpp)",
+      "type": "shell",
+      "command": "${HOME}/gcc-trunk/bin/g++",
+      "args": [
+        "-std=c++26",
+        "-freflection",
+        "-g",
+        "-Wall",
+        "-Wextra",
+        "-O0",
+        "${workspaceFolder}/main.cpp",
+        "-o",
+        "${workspaceFolder}/main"
+      ],
+      "group": "build",
+      "problemMatcher": [
+        "$gcc"
+      ],
+      "detail": "Build main.cpp specifically"
+    },
+    {
+      "label": "C++: Build All Sources",
+      "type": "shell",
+      "command": "${HOME}/gcc-trunk/bin/g++",
+      "args": [
+        "-std=c++26",
+        "-freflection",
+        "-g",
+        "-Wall",
+        "-Wextra",
+        "-O0",
+        "${workspaceFolder}/*.cpp",
+        "-o",
+        "${workspaceFolder}/program"
+      ],
+      "group": "build",
+      "problemMatcher": [
+        "$gcc"
+      ],
+      "detail": "Build all .cpp files in workspace root"
+    },
+    {
+      "label": "C++: Build Optimized",
+      "type": "shell",
+      "command": "${HOME}/gcc-trunk/bin/g++",
+      "args": [
+        "-std=c++26",
+        "-freflection",
+        "-O3",
+        "-Wall",
+        "-Wextra",
+        "-DNDEBUG",
+        "${file}",
+        "-o",
+        "${fileDirname}/${fileBasenameNoExtension}"
+      ],
+      "group": "build",
+      "problemMatcher": [
+        "$gcc"
+      ],
+      "detail": "Build optimized C++26 with reflection support"
+    },
+    {
+      "label": "C++: Clean",
+      "type": "shell",
+      "command": "rm",
+      "args": [
+        "-f",
+        "${fileDirname}/${fileBasenameNoExtension}",
+        "${workspaceFolder}/main",
+        "${workspaceFolder}/program"
+      ],
+      "group": "build",
+      "problemMatcher": []
+    },
+    {
+      "label": "CMake: Configure",
+      "type": "shell",
+      "command": "cmake",
+      "args": [
+        "-B",
+        "build",
+        "-DCMAKE_BUILD_TYPE=Debug"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "CMake: Build",
+      "type": "shell",
+      "command": "cmake",
+      "args": [
+        "--build",
+        "build"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "problemMatcher": [
+        "$gcc"
+      ],
+      "dependsOn": [
+        "CMake: Configure"
+      ]
+    }
+  ]
+}
