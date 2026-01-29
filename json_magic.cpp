@@ -161,8 +161,7 @@ private:
         }
     }
 
-    // Written by Gemini 3 Pro
-    // Simple helper to find "key": value in JSON string (Demonstration only, not robust)
+    // Written by Gemini 3 Flash Thinking
     static std::string_view extract_json_value(std::string_view json, std::string_view key)
     {
         // 1. Find "key"
@@ -181,25 +180,47 @@ private:
         if (val_start == std::string_view::npos)
             return {};
 
-        // 4. Find value end
+        // 4. Determine value end based on type
         size_t val_end = std::string_view::npos;
+        char start_char = json[val_start];
 
-        if (json[val_start] == '"')
+        if (start_char == '"')
         {
-            // It's a string, find closing quote (ignoring escaped quotes for simplicity)
+            // String: Find closing quote (simplified: doesn't handle escaped \")
             val_end = json.find('"', val_start + 1);
             if (val_end != std::string_view::npos)
-                val_end += 1; // Include the closing quote
+                val_end++;
+        }
+        else if (start_char == '{' || start_char == '[')
+        {
+            // Complex type: Nested object or array
+            char open = start_char;
+            char close = (start_char == '{') ? '}' : ']';
+            int depth = 0;
+            for (size_t i = val_start; i < json.size(); ++i)
+            {
+                if (json[i] == open)
+                    depth++;
+                else if (json[i] == close)
+                {
+                    depth--;
+                    if (depth == 0)
+                    {
+                        val_end = i + 1;
+                        break;
+                    }
+                }
+            }
         }
         else
         {
-            // It's a primitive, read until comma or closing brace
-            val_end = json.find_first_of(",}", val_start);
+            // Primitive: Number, bool, or null
+            // Read until the next delimiter at the current level
+            val_end = json.find_first_of(",}]", val_start);
         }
 
         if (val_end == std::string_view::npos)
-            return {};
-
+            return json.substr(val_start);
         return json.substr(val_start, val_end - val_start);
     }
 
