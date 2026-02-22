@@ -20,102 +20,6 @@ public:
         return obj;
     }
 
-    // Written by Gemini 3 Pro
-    /*
-    template <typename T>
-    static T from_string(std::string_view json)
-    {
-        T obj{}; // Default construct the object
-
-        // Reflection Setup
-        constexpr static auto ctx = std::meta::access_context::current();
-        constexpr static auto class_members = std::define_static_array(std::meta::nonstatic_data_members_of(^^T, ctx));
-        constexpr static auto class_members_indices = make_indices_array<class_members.size()>();
-
-        // Compile-time iteration over members
-        template for (constexpr auto i : class_members_indices)
-        {
-            constexpr auto member = class_members[i];
-            constexpr auto member_name = std::meta::identifier_of(member);
-            constexpr auto member_typeinfo = std::meta::type_of(member);
-            constexpr auto true_type = std::meta::dealias(std::meta::remove_cvref(member_typeinfo));
-
-            // Runtime: Find the raw string value for this key in the JSON
-            std::string_view raw_value = extract_json_value(json, member_name);
-
-            if (!raw_value.empty())
-            {
-                // Splicing [: info :] lets us use standard C++ traits
-                using MemberT = [:true_type:];
-
-                if constexpr (std::is_same_v<MemberT, std::string>)
-                {
-                    // Strip quotes for strings
-                    if (raw_value.size() >= 2)
-                    {
-                        obj.[:member:] = std::string(raw_value.substr(1, raw_value.size() - 2));
-                    }
-                }
-                else if constexpr (std::is_arithmetic_v<MemberT>)
-                {
-                    // Parse numbers
-                    std::from_chars(raw_value.data(), raw_value.data() + raw_value.size(), obj.[:member:]);
-                }
-                else
-                {
-                    // TODO: Recursive objects, vectors, etc.
-                }
-            }
-        }
-
-        return obj;
-    }
-    */
-
-private:
-    template <std::size_t N>
-    consteval static std::array<std::size_t, N> make_indices_array()
-    {
-        std::array<std::size_t, N> a{};
-        for (std::size_t i = 0; i < N; i++)
-        {
-            a[i] = i;
-        }
-        return a;
-    }
-
-    // Partially written by Gemini 3 Flash thinking
-    // 1. Logic for serializing an Object (Class/Struct)
-    template <typename T>
-    static std::string serialize_object(const T &t)
-    {
-        std::string res = "{";
-
-        constexpr static auto ctx = std::meta::access_context::current();
-        constexpr static auto class_members = std::define_static_array(std::meta::nonstatic_data_members_of(^^T, ctx));
-
-        bool first = true;
-        constexpr static auto class_members_indices = make_indices_array<class_members.size()>();
-        template for (constexpr auto i : class_members_indices)
-        {
-            if (!first)
-                res += ",";
-
-            constexpr auto member = class_members[i];
-            constexpr auto name = std::meta::identifier_of(member);
-            res += "\"";
-            res += name;
-            res += "\":";
-
-            // Recursive call: handles strings, ints, vectors, or nested structs
-            res += serialize_value(t.[:member:]);
-            first = false;
-        }
-
-        res += "}";
-        return res;
-    }
-
     // Written by Gemini 3 Flash thinking
     // 2. Main Dispatcher (The "serialize_value" function)
     template <typename T>
@@ -159,6 +63,50 @@ private:
         {
             return "\"unknown type\"";
         }
+    }
+
+private:
+    template <std::size_t N>
+    consteval static std::array<std::size_t, N> make_indices_array()
+    {
+        std::array<std::size_t, N> a{};
+        for (std::size_t i = 0; i < N; i++)
+        {
+            a[i] = i;
+        }
+        return a;
+    }
+
+    // Partially written by Gemini 3 Flash thinking
+    // 1. Logic for serializing an Object (Class/Struct)
+    template <typename T>
+    static std::string serialize_object(const T &t)
+    {
+        std::string res = "{";
+
+        constexpr static auto ctx = std::meta::access_context::current();
+        constexpr static auto class_members = std::define_static_array(std::meta::nonstatic_data_members_of(^^T, ctx));
+
+        bool first = true;
+        constexpr static auto class_members_indices = make_indices_array<class_members.size()>();
+        template for (constexpr auto i : class_members_indices)
+        {
+            if (!first)
+                res += ",";
+
+            constexpr auto member = class_members[i];
+            constexpr auto name = std::meta::identifier_of(member);
+            res += "\"";
+            res += name;
+            res += "\":";
+
+            // Recursive call: handles strings, ints, vectors, or nested structs
+            res += serialize_value(t.[:member:]);
+            first = false;
+        }
+
+        res += "}";
+        return res;
     }
 
     // Written by Gemini 3 Flash Thinking
