@@ -65,6 +65,44 @@ public:
         }
     }
 
+    // --- 3. Main Dispatcher ---
+    template <typename T>
+    static void deserialize_value(T &obj, std::string_view json)
+    {
+        using RawT = std::remove_cvref_t<T>;
+
+        // Case A: Strings
+        if constexpr (std::is_same_v<RawT, std::string>)
+        {
+            if (json.size() >= 2 && json.front() == '"')
+            {
+                obj = std::string(json.substr(1, json.size() - 2));
+            }
+        }
+        // Case B: Arithmetic
+        else if constexpr (std::is_arithmetic_v<RawT>)
+        {
+            if constexpr (std::is_same_v<RawT, bool>)
+            {
+                obj = (json == "true");
+            }
+            else
+            {
+                std::from_chars(json.data(), json.data() + json.size(), obj);
+            }
+        }
+        // Case C: Ranges (vector, list, array)
+        else if constexpr (std::ranges::range<RawT>)
+        {
+            deserialize_range(obj, json);
+        }
+        // Case D: Nested Structs/Classes
+        else if constexpr (std::is_class_v<RawT>)
+        {
+            obj = deserialize_object<RawT>(json);
+        }
+    }
+
 private:
     template <std::size_t N>
     consteval static std::array<std::size_t, N> make_indices_array()
@@ -270,41 +308,5 @@ private:
         }
     }
 
-    // --- 3. Main Dispatcher ---
-    template <typename T>
-    static void deserialize_value(T &obj, std::string_view json)
-    {
-        using RawT = std::remove_cvref_t<T>;
-
-        // Case A: Strings
-        if constexpr (std::is_same_v<RawT, std::string>)
-        {
-            if (json.size() >= 2 && json.front() == '"')
-            {
-                obj = std::string(json.substr(1, json.size() - 2));
-            }
-        }
-        // Case B: Arithmetic
-        else if constexpr (std::is_arithmetic_v<RawT>)
-        {
-            if constexpr (std::is_same_v<RawT, bool>)
-            {
-                obj = (json == "true");
-            }
-            else
-            {
-                std::from_chars(json.data(), json.data() + json.size(), obj);
-            }
-        }
-        // Case C: Ranges (vector, list, array)
-        else if constexpr (std::ranges::range<RawT>)
-        {
-            deserialize_range(obj, json);
-        }
-        // Case D: Nested Structs/Classes
-        else if constexpr (std::is_class_v<RawT>)
-        {
-            obj = deserialize_object<RawT>(json);
-        }
-    }
+    
 };
