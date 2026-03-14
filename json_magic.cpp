@@ -126,13 +126,11 @@ private:
         constexpr static auto class_members = std::define_static_array(std::meta::nonstatic_data_members_of(^^T, ctx));
 
         bool first = true;
-        constexpr static auto class_members_indices = make_indices_array<class_members.size()>();
-        template for (constexpr auto i : class_members_indices)
+        template for (constexpr auto member : class_members)
         {
             if (!first)
                 res += ",";
 
-            constexpr auto member = class_members[i];
             constexpr auto name = std::meta::identifier_of(member);
             res += "\"";
             res += name;
@@ -234,11 +232,9 @@ private:
         T obj{};
         constexpr static auto ctx = std::meta::access_context::current();
         constexpr static auto class_members = std::define_static_array(std::meta::nonstatic_data_members_of(^^T, ctx));
-        constexpr static auto class_members_indices = make_indices_array<class_members.size()>();
 
-        template for (constexpr auto i : class_members_indices)
+        template for (constexpr auto member : class_members)
         {
-            constexpr auto member = class_members[i];
             constexpr auto member_name = std::meta::identifier_of(member);
 
             // Use the helper you provided (or an improved version) to find the field
